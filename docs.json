@@ -18,8 +18,18 @@
             "pages": [
               "index",
               "quickstart",
-              "migrating-to-v2",
-              "allowed-file-types"
+              "migrating-to-v2"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Object Storage Reference",
+        "groups": [
+          {
+            "group": "Core Features",
+            "pages": [
+              "object-storage"
             ]
           }
         ]

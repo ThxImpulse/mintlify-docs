@@ -1,0 +1,109 @@
+---
+title: 'Object Storage'
+description: 'Developer guide for managing buckets, folders, and objects in Null Drop.'
+---
+
+Object Storage is a high-performance, scalable solution for storing any type of binary data. This guide covers the core concepts, API interactions, and advanced features like prefix-based folder organization and date-based sorting.
+
+## Core Concepts
+
+Null Drop uses a flat storage structure that simulates a hierarchical file system using **Keys** and **Prefixes**.
+
+| Concept | Description |
+| :--- | :--- |
+| **Bucket** | A top-level container for your objects. Each bucket has its own configuration (Visibility, CORS, etc.). |
+| **Object** | The fundamental unit of storage. Consists of data (the file) and metadata. |
+| **Key** | The unique identifier for an object within a bucket (e.g., `images/vacation/beach.jpg`). |
+| **Prefix** | A string used to group objects. Everything before the last `/` in a key is considered a prefix (folder path). |
+
+---
+
+## Managing Objects via API
+
+All Bucket-specific API calls interact with the `https://nulldrop.xyz/api/buckets/[bucketId]/objects` endpoint.
+
+### 1. Listing Objects & Folders
+To list objects, perform a `GET` request. The API automatically identifies common prefixes (folders) and handles pagination.
+
+#### Query Parameters
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `prefix` | `string` | `""` | Limits the response to keys that begin with the specified prefix. Use this to "enter" folders. |
+| `cursor` | `string` | `null` | Used for pagination. Provide the `nextCursor` value from a previous response. |
+| `limit` | `number` | `50` | Maximum number of items to return (Max: 100). |
+
+<CodeGroup>
+```bash cURL
+curl "https://nulldrop.xyz/api/buckets/cmm...mo4/objects?prefix=docs/&limit=20" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```javascript Node.js
+const response = await fetch('https://nulldrop.xyz/api/buckets/BUCKET_ID/objects?prefix=docs/', {
+  headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
+});
+const { objects, commonPrefixes, nextCursor } = await response.json();
+```
+</CodeGroup>
+
+> [!TIP]
+> **Sorting**: Objects are returned in **Descending Order** by upload date (`createdAt`). The most recent files always appear first.
+
+---
+
+### 2. Uploading Objects
+Uploads use `multipart/form-data`. You can specify a custom `key` to define the file's path within the bucket.
+
+#### Request Body (Form Data)
+
+| Field | Requirement | Description |
+| :--- | :--- | :--- |
+| `file` | **Required** | The binary file content to upload. |
+| `key` | Optional | The destination path (e.g., `backups/db_legacy.sql`). Defaults to the local filename. |
+
+```bash cURL Example
+curl -X POST "https://nulldrop.xyz/api/buckets/BUCKET_ID/objects" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "file=@local_report.pdf" \
+  -F "key=reports/2024/finance.pdf"
+```
+
+> [!WARNING]
+> When using `curl`, you **must** prefix the file path with `@` (e.g., `file=@path/to/file`) to ensure the file content is transmitted, not just the filename string.
+
+---
+
+### 3. Downloading & Deleting
+Objects can be managed individually using their key. Note that the key must be **URL-encoded** if it contains slashes or special characters.
+
+| Action | Method | Endpoint |
+| :--- | :--- | :--- |
+| **Download** | `GET` | `/api/buckets/[id]/objects/[encodedKey]` |
+| **Delete** | `DELETE` | `/api/buckets/[id]/objects/[encodedKey]` |
+
+---
+
+## Advanced Features
+
+### Smart Icons (Archive Recognition)
+The Null Drop interface provides specialized visual cues for specific file types. Archive files are displayed with a **Folder Icon** to represent their nature as containers.
+
+**Supported Archive Types:**
+- Compressed: `.zip`, `.rar`, `.7z`, `.tar`, `.gz`
+- Other: `.bz2`, `.xz`
+
+### Pagination Logic
+Null Drop uses cursor-based pagination for stability.
+1. Make an initial request.
+2. If the response contains `nextCursor`, more data is available.
+3. Pass `nextCursor` as the `cursor` query parameter in your next request.
+
+```json Response
+{
+  "objects": [...],
+  "commonPrefixes": ["images/", "logs/"],
+  "nextCursor": "2024-03-01T12:00:00.000Z",
+  "prefix": ""
+}
+```

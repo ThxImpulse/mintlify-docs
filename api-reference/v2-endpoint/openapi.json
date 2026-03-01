@@ -16,6 +16,217 @@
     }
   ],
   "paths": {
+    "/buckets/{id}/objects": {
+      "get": {
+        "summary": "List bucket objects",
+        "description": "List objects in a specific bucket with prefix filter and cursor-based pagination",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bucket ID"
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by key prefix (folder)"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Pagination cursor"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            },
+            "description": "Max items to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Object list with common prefixes and cursor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "objects": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/File"
+                      }
+                    },
+                    "commonPrefixes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "prefix": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Upload to bucket",
+        "description": "Upload a file to a specific bucket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bucket ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File to upload"
+                  },
+                  "key": {
+                    "type": "string",
+                    "description": "Optional custom key (path)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "$ref": "#/components/schemas/File"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buckets/{id}/objects/{key}": {
+      "get": {
+        "summary": "Download object",
+        "description": "Download an object from a bucket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bucket ID"
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Object key (URL encoded)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete object",
+        "description": "Delete an object from a bucket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bucket ID"
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Object key (URL encoded)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/upload": {
       "post": {
         "summary": "Upload a file",
@@ -31,7 +242,9 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": ["file"],
+                "required": [
+                  "file"
+                ],
                 "properties": {
                   "file": {
                     "type": "string",
@@ -40,7 +253,10 @@
                   },
                   "isPublic": {
                     "type": "string",
-                    "enum": ["true", "false"],
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
                     "default": "true",
                     "description": "File visibility - true for public, false for private"
                   }
@@ -96,7 +312,7 @@
     "/upload/bulk": {
       "post": {
         "summary": "Upload multiple files",
-        "description": "Upload up to 50 files simultaneously with parallel processing",
+        "description": "Upload up to 10 files simultaneously with parallel processing",
         "security": [
           {
             "bearerAuth": []
@@ -108,7 +324,9 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": ["files"],
+                "required": [
+                  "files"
+                ],
                 "properties": {
                   "files": {
                     "type": "array",
@@ -116,11 +334,14 @@
                       "type": "string",
                       "format": "binary"
                     },
-                    "description": "Array of files to upload (max 50)"
+                    "description": "Array of files to upload (max 10)"
                   },
                   "isPublic": {
                     "type": "string",
-                    "enum": ["true", "false"],
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
                     "default": "true",
                     "description": "File visibility - applies to all files"
                   }
@@ -382,7 +603,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["fileIds"],
+                "required": [
+                  "fileIds"
+                ],
                 "properties": {
                   "fileIds": {
                     "type": "array",
@@ -390,7 +613,11 @@
                       "type": "string"
                     },
                     "description": "Array of file IDs to delete (max 50)",
-                    "example": ["abc123", "def456", "ghi789"]
+                    "example": [
+                      "abc123",
+                      "def456",
+                      "ghi789"
+                    ]
                   }
                 }
               }
@@ -443,27 +670,27 @@
           "data": {
             "type": "object",
             "properties": {
-              "id": { 
+              "id": {
                 "type": "string",
                 "description": "File ID"
               },
-              "filename": { 
+              "filename": {
                 "type": "string",
                 "description": "Original filename"
               },
-              "size": { 
+              "size": {
                 "type": "integer",
                 "description": "File size in bytes"
               },
-              "mimeType": { 
+              "mimeType": {
                 "type": "string",
                 "description": "MIME type"
               },
-              "downloadUrl": { 
+              "downloadUrl": {
                 "type": "string",
                 "description": "Download URL"
               },
-              "shareUrl": { 
+              "shareUrl": {
                 "type": "string",
                 "description": "Share URL"
               },
@@ -471,8 +698,8 @@
                 "type": "boolean",
                 "description": "File visibility status"
               },
-              "uploadedAt": { 
-                "type": "string", 
+              "uploadedAt": {
+                "type": "string",
                 "format": "date-time",
                 "description": "Upload timestamp"
               }
@@ -487,13 +714,17 @@
       "FileListResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
+          "success": {
+            "type": "boolean"
+          },
           "data": {
             "type": "object",
             "properties": {
               "files": {
                 "type": "array",
-                "items": { "$ref": "#/components/schemas/File" }
+                "items": {
+                  "$ref": "#/components/schemas/File"
+                }
               },
               "total": {
                 "type": "integer",
@@ -514,35 +745,73 @@
       "FileResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
-          "data": { "$ref": "#/components/schemas/File" }
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/File"
+          }
         }
       },
       "File": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "filename": { "type": "string" },
-          "originalName": { "type": "string" },
-          "size": { "type": "integer" },
-          "mimeType": { "type": "string" },
-          "downloadUrl": { "type": "string" },
-          "shareUrl": { "type": "string" },
-          "isPublic": { "type": "boolean" },
-          "downloadCount": { "type": "integer" },
-          "uploadedAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "expiresAt": { "type": ["string", "null"], "format": "date-time" }
+          "id": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "originalName": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "downloadUrl": {
+            "type": "string"
+          },
+          "shareUrl": {
+            "type": "string"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "downloadCount": {
+            "type": "integer"
+          },
+          "uploadedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
         }
       },
       "DeleteResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
+          "success": {
+            "type": "boolean"
+          },
           "data": {
             "type": "object",
             "properties": {
-              "message": { "type": "string" }
+              "message": {
+                "type": "string"
+              }
             }
           }
         }
@@ -550,11 +819,11 @@
       "Error": {
         "type": "object",
         "properties": {
-          "error": { 
+          "error": {
             "type": "string",
             "description": "Error message"
           },
-          "code": { 
+          "code": {
             "type": "string",
             "description": "Error code"
           }
@@ -563,7 +832,9 @@
       "BulkUploadResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
+          "success": {
+            "type": "boolean"
+          },
           "data": {
             "type": "object",
             "properties": {
@@ -586,18 +857,38 @@
                     {
                       "type": "object",
                       "properties": {
-                        "success": { "type": "boolean", "example": true },
+                        "success": {
+                          "type": "boolean",
+                          "example": true
+                        },
                         "data": {
                           "type": "object",
                           "properties": {
-                            "id": { "type": "string" },
-                            "filename": { "type": "string" },
-                            "size": { "type": "integer" },
-                            "mimeType": { "type": "string" },
-                            "downloadUrl": { "type": "string" },
-                            "shareUrl": { "type": "string" },
-                            "isPublic": { "type": "boolean" },
-                            "uploadedAt": { "type": "string", "format": "date-time" }
+                            "id": {
+                              "type": "string"
+                            },
+                            "filename": {
+                              "type": "string"
+                            },
+                            "size": {
+                              "type": "integer"
+                            },
+                            "mimeType": {
+                              "type": "string"
+                            },
+                            "downloadUrl": {
+                              "type": "string"
+                            },
+                            "shareUrl": {
+                              "type": "string"
+                            },
+                            "isPublic": {
+                              "type": "boolean"
+                            },
+                            "uploadedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
                           }
                         }
                       }
@@ -605,10 +896,19 @@
                     {
                       "type": "object",
                       "properties": {
-                        "success": { "type": "boolean", "example": false },
-                        "filename": { "type": "string" },
-                        "error": { "type": "string" },
-                        "code": { "type": "string" }
+                        "success": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "filename": {
+                          "type": "string"
+                        },
+                        "error": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        }
                       }
                     }
                   ]
@@ -625,7 +925,9 @@
       "BulkDeleteResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
+          "success": {
+            "type": "boolean"
+          },
           "data": {
             "type": "object",
             "properties": {
@@ -648,18 +950,34 @@
                     {
                       "type": "object",
                       "properties": {
-                        "success": { "type": "boolean", "example": true },
-                        "id": { "type": "string" },
-                        "filename": { "type": "string" }
+                        "success": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "filename": {
+                          "type": "string"
+                        }
                       }
                     },
                     {
                       "type": "object",
                       "properties": {
-                        "success": { "type": "boolean", "example": false },
-                        "id": { "type": "string" },
-                        "error": { "type": "string" },
-                        "code": { "type": "string" }
+                        "success": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "error": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        }
                       }
                     }
                   ]
