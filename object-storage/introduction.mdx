@@ -1,0 +1,46 @@
+---
+title: "Introduction"
+description: "Welcome to Null Drop Object Storage documentation."
+---
+
+Object Storage in Null Drop provides a powerful, scalable way to store and manage your files. Whether you are building a simple backup script or a complex web application, our API and storage infrastructure are designed to handle your needs.
+
+## Why Null Drop Object Storage?
+
+- **Simulated Hierarchy**: Use keys and prefixes to organize files just like a traditional file system.
+- **Developer-First**: Simple API structure, detailed documentation, and robust authentication.
+- **Smart Features**: Built-in archive detection, automatic sorting, and cursor-based pagination for large datasets.
+- **High Performance**: Optimized for fast uploads and low-latency downloads.
+
+## Getting Started
+
+To begin using Object Storage, you'll need:
+1. A Null Drop account.
+2. An API Key (find it in your dashboard).
+3. A Bucket ID to store your objects.
+
+### Core Concepts
+
+Before diving into the API, familiarize yourself with these terms:
+
+| Concept | Description |
+| :--- | :--- |
+| **Bucket** | A container for your objects. |
+| **Object** | Your file and its associated metadata. |
+| **Key** | The full path to your file (e.g., `uploads/images/photo.jpg`). |
+| **Prefix** | A way to group keys into virtual folders (e.g., `uploads/images/`). |
+
+---
+
+## Technical Specifications
+
+Null Drop Object Storage uses standard HTTP methods and follows RESTful principles. All bucket-related endpoints are under `/api/buckets/{id}/objects`.
+
+<CardGroup cols={2}>
+  <Card title="Listing Objects" icon="list" href="/object-storage/list">
+    Learn how to fetch files and navigate folders using prefixes.
+  </Card>
+  <Card title="Uploading Files" icon="upload" href="/object-storage/upload">
+    Step-by-step guide for standard and CMD-based uploads.
+  </Card>
+</CardGroup>

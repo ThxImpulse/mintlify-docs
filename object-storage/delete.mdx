@@ -1,0 +1,22 @@
+---
+title: "Delete Object"
+openapi: "DELETE /buckets/{id}/objects/{key}"
+description: "Permanently remove an object from a bucket."
+---
+
+The Delete operation removes an object from a bucket. This operation is permanent and cannot be undone.
+
+### Parameters
+
+| Parameter | Require | Description |
+| :--- | :--- | :--- |
+| **id** | Yes | Unique identifier of the bucket. |
+| **key** | Yes | URL-encoded path to the object. |
+
+### Permissions
+
+Only the bucket owner or an authenticated developer with a valid API Key can delete objects. If the bucket is set to private, additional authentication headers are required.
+
+### Errors
+
+If the object does not exist, the API returns a `404 Not Found` error. Ensure the key is correctly encoded, especially if it contains virtual folder levels (slashes).

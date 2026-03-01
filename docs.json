@@ -27,9 +27,18 @@
         "tab": "Object Storage Reference",
         "groups": [
           {
-            "group": "Core Features",
+            "group": "Getting Started",
             "pages": [
-              "object-storage"
+              "object-storage/introduction"
+            ]
+          },
+          {
+            "group": "Buckets API",
+            "pages": [
+              "object-storage/list",
+              "object-storage/upload",
+              "object-storage/download",
+              "object-storage/delete"
             ]
           }
         ]

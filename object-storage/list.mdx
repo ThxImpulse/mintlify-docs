@@ -1,0 +1,22 @@
+---
+title: "List Bucket Objects"
+openapi: "GET /buckets/{id}/objects"
+description: "Fetch a list of objects and folders within a bucket."
+---
+
+The List Objects operation returns some or all (up to 100) of the objects in a bucket. You can use the `prefix` parameter to group objects into virtual folders.
+
+### Folder Simulation
+
+Null Drop uses the `/` character to simulate folders. When you provide a `prefix`, the API:
+1. Filters objects whose keys start with that prefix.
+2. Identifies "Common Prefixes" (folders) at the current level.
+3. Returns files that are directly under that prefix.
+
+### Pagination
+
+If the number of objects exceeds the `limit`, the response will include a `nextCursor`. To fetch the next page, send another request with the `cursor` parameter set to the value of `nextCursor`.
+
+### Sorting
+
+By default, objects are sorted by **Upload Date (Newest First)**. This behavior is consistent across the web interface and the API.

@@ -1,0 +1,29 @@
+---
+title: "Upload Object"
+openapi: "POST /buckets/{id}/objects"
+description: "Upload a file into a specific bucket."
+---
+
+The Upload operation adds a new object to a bucket. You can optionally specify a `key` to define the exact destination path.
+
+### CMD / cURL Usage
+
+When uploading from the command line, ensure you use the correct syntax for the file parameter.
+
+<Warning>
+  You **must** use the `@` prefix for the file path in `curl` to send the file content instead of its name.
+  
+  **Correct:** `-F "file=@demo.zip"`  
+  **Incorrect:** `-F "file=demo.zip"`
+</Warning>
+
+### Request Body
+
+| Parameter | Require | Description |
+| :--- | :--- | :--- |
+| **file** | Yes | Binary file to upload. |
+| **key** | No | Destination path (including file name). If omitted, the local filename is used. |
+
+### Success Response
+
+Upon successful upload, the API returns the created object's metadata, including its unique ID, filename, size, and MIME type.

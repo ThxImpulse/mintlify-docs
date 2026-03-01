@@ -1,0 +1,24 @@
+---
+title: "Download Object"
+openapi: "GET /buckets/{id}/objects/{key}"
+description: "Download the contents of an object."
+---
+
+The Download operation retrieves the content of an object. You can use it to fetch any file stored in your bucket.
+
+### URL-Encoding the Key
+
+If your object's key contains slashes or special characters, you **must URL-encode** the key in the path.
+
+**Example:**
+- **Key:** `backups/db.sql`
+- **URL Path:** `/api/buckets/{id}/objects/backups%2Fdb.sql`
+
+### Response Headers
+
+The response includes the following headers to help your browser or client handle the file:
+
+- `Content-Type`: Automatically detected MIME type.
+- `Content-Length`: The file size in bytes.
+- `Content-Disposition`: Suggested filename for saving.
+- `Cache-Control`: Public cache settings.
